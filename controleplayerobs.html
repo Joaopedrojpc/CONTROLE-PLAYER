@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Player OBS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        input[type="text"] {
+            width: 80%;
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #28a745;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        video {
+            margin-top: 10px;
+            width: 100%;
+            max-width: 800px;
+            display: none;
+        }
+        video.fullscreen {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        .controls {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Controle de Player para OBS Studio</h2>
+        <input type="text" id="urlInput" placeholder="Cole o link do player ao vivo aqui" />
+        <button onclick="playStream()">Play</button>
+        <video id="player" controls>
+            Seu navegador não suporta a reprodução de vídeos.
+        </video>
+        <button class="controls" onclick="toggleFullscreen()">Tela Cheia</button>
+    </div>
+
+    <!-- Adicionando hls.js -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+        function playStream() {
+            const urlInput = document.getElementById('urlInput');
+            const video = document.getElementById('player');
+
+            if (urlInput.value.trim() === '') {
+                alert('Por favor, cole um link de player ao vivo.');
+                return;
+            }
+
+            // Verifica se o navegador suporta HLS nativamente
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(urlInput.value);
+                hls.attachMedia(video);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.style.display = 'block';
+                    video.play().catch(err => {
+                        alert('Erro ao tentar reproduzir o vídeo: ' + err);
+                    });
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Suporte nativo para HLS no navegador (ex: Safari)
+                video.src = urlInput.value;
+                video.style.display = 'block';
+                video.play().catch(err => {
+                    alert('Erro ao tentar reproduzir o vídeo: ' + err);
+                });
+            } else {
+                alert('Este navegador não suporta reprodução de vídeo HLS.');
+            }
+        }
+
+        function toggleFullscreen() {
+            const video = document.getElementById('player');
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.mozRequestFullScreen) { // Firefox
+                video.mozRequestFullScreen();
+            } else if (video.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) { // IE/Edge
+                video.msRequestFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
+
