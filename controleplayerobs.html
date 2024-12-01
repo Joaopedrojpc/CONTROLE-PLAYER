@@ -65,6 +65,32 @@
     <!-- Adicionando hls.js -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
+        // Configuração da conexão WebSocket com OBS Studio
+        const socket = new WebSocket('ws://localhost:4444');
+
+        socket.onopen = function() {
+            console.log('Conectado ao servidor OBS WebSocket');
+            // Enviar a senha para autenticação (se necessário)
+            socket.send(JSON.stringify({
+                "request-type": "Authenticate",
+                "message-id": "1",
+                "auth": "sua_senha_aqui" // Substitua com a senha do OBS
+            }));
+        };
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log('Mensagem recebida:', data);
+        };
+
+        socket.onerror = function(error) {
+            console.error('Erro de conexão:', error);
+        };
+
+        socket.onclose = function() {
+            console.log('Conexão fechada');
+        };
+
         function playStream() {
             const urlInput = document.getElementById('urlInput');
             const video = document.getElementById('player');
